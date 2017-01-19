@@ -11,23 +11,23 @@ import java.util.List;
  * Created by anoopd on 1/13/17.
  */
 public class Ru {
-    public static void meanwhile(String fullyQualifiedMethodName) {
-        meanwhile(fullyQualifiedMethodName,
+    public static Thread meanwhile(String fullyQualifiedMethodName) {
+        return meanwhile(fullyQualifiedMethodName,
                 new ArrayList<Class>(),
                 new ArrayList<Object>(),
                 new ArrayList<Class>(),
                 new ArrayList<Object>());
     }
 
-    public static void meanwhile(String fullyQualifiedMethodName, List<Class> typeList, List<Object> valueList) {
-        meanwhile(fullyQualifiedMethodName,
+    public static Thread meanwhile(String fullyQualifiedMethodName, List<Class> typeList, List<Object> valueList) {
+        return meanwhile(fullyQualifiedMethodName,
                 typeList,
                 valueList,
                 new ArrayList<Class>(),
                 new ArrayList<Object>());
     }
 
-    public static void meanwhile(String fullyQualifiedMethodName,
+    public static Thread meanwhile(String fullyQualifiedMethodName,
                                  List<Class> typeList,
                                  List<Object> valueList,
                                  List<Class> constructorType,
@@ -44,12 +44,12 @@ public class Ru {
             Method runnableMethod = objectClass.getDeclaredMethod(methodName, types);
             // For static methods
             if (Modifier.isStatic(runnableMethod.getModifiers())) {
-                createThread(objectClass, runnableMethod, valueList);
+                return createThread(objectClass, runnableMethod, valueList);
             } else {
                 Class[] consTypes = (constructorType.toArray(new Class[constructorType.size()]));
                 Constructor<?> cons = objectClass.getConstructor(consTypes);
                 Object objectNonStatic = cons.newInstance(constructorValue.toArray());
-                createThread(objectNonStatic, runnableMethod, valueList);
+                return createThread(objectNonStatic, runnableMethod, valueList);
             }
         } catch(ClassNotFoundException cNF){
             cNF.printStackTrace();
@@ -62,12 +62,14 @@ public class Ru {
         } catch(InstantiationException iE){
             iE.printStackTrace();
         }
+        //Should never come here.
+        return null;
     }
 
-    private static void createThread(Object objectClass,
+    private static Thread createThread(Object objectClass,
                                      Method runnableMethod,
                                      List<Object> valueList) {
-        new Thread(() -> {
+        Thread t = new Thread(() -> {
             try {
                 Object[] paramValues = valueList.toArray();
                 runnableMethod.invoke(objectClass, paramValues);
@@ -77,6 +79,8 @@ public class Ru {
                 iTE.printStackTrace();
             }
         }
-        ).start();
+        );
+        t.start();
+        return t;
     }
 }
